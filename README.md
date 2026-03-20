@@ -34,6 +34,11 @@ The workflow support MacOS and Linux operating systems. Notably, the workflow ha
     nextflow run main.nf -profile functional_test > logs/execution.log
     ```
 
+3. Run the MS-DIAL 5-only variant with example data:
+    ```bash
+    nextflow run main_msdial5.nf -profile functional_test > logs/execution_msdial5.log
+    ```
+
 ## Example data and Results
 
 - Example data: https://drive.google.com/drive/folders/1atsy-TlfJSs0sw2ZCvbkqOSAbZFYRqdy, which is the publicly available data from the publication “Li, Z., Lu, Y., Guo, Y., Cao, H., Wang, Q., & Shui, W. (2018). Comprehensive evaluation of untargeted metabolomics data processing software in feature detection, quantification, and discriminating marker selection. Analytica Chimica Acta, 1029, 50–57”. The data has ten samples in total and five samples in each of the two groups. The protocol regarding processing this data is also publicly available at MetaboLights MTBLS733 (https://www.ebi.ac.uk/metabolights/editor/MTBLS733/protocols).
@@ -56,6 +61,23 @@ The workflow support MacOS and Linux operating systems. Notably, the workflow ha
 3. Run the pipeline (use "docker" as the profile when running locally, and "singularity" as the profile when running with a high-performance computing system):
     ```bash
     nextflow run main.nf -profile docker > logs/execution.log
+    ```
+
+4. Run the MS-DIAL 5-only variant:
+    ```bash
+    nextflow run main_msdial5.nf -profile docker > logs/execution_msdial5.log
+    ```
+
+## MS-DIAL 5-Only Variant
+
+- The entrypoint is `main_msdial5.nf`.
+- This variant runs MS-DIAL 5 only and skips MS-FLO post-processing.
+- It downloads the official Linux console release at runtime using the parameter `--msdial5_release_url`.
+- The default release URL points to `MSDIAL.console.v5.5.251021-linux-net8.zip`.
+- The primary MS-DIAL 5 alignment output is `AlignResult*.mdalign`, with companion `AlignResult*.mdmsp` and `AlignResult*.mzTabM` files.
+- Example command:
+    ```bash
+    nextflow run main_msdial5.nf -profile functional_test
     ```
 
 ## Configuration
