@@ -22,9 +22,12 @@ This repository is now documented primarily around the MS-DIAL 5 workflow in `ma
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Nextflow4Metabolomics/nextflow4ms-dial.git
-   cd nextflow4ms-dial
+   git clone <your-msdial5-repo-url> msdial5-workflow
+   cd msdial5-workflow
    ```
+
+   If you are still using the current upstream repository before it is renamed, replace `<your-msdial5-repo-url>` with:
+   `https://github.com/Nextflow4Metabolomics/nextflow4ms-dial.git`
 
 2. Run the validated example dataset:
    ```bash
