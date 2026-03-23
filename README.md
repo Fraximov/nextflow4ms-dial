@@ -73,12 +73,18 @@ The workflow support MacOS and Linux operating systems. Notably, the workflow ha
 - The entrypoint is `main_msdial5.nf`.
 - This variant runs MS-DIAL 5 only and skips MS-FLO post-processing.
 - It downloads the official Linux console release at runtime using the parameter `--msdial5_release_url`.
+- It can preprocess Thermo `.raw` files by converting them to `.mzML` with ThermoRawFileParser before running MS-DIAL 5.
 - The default release URL points to `MSDIAL.console.v5.5.251021-linux-net8.zip`.
 - The primary MS-DIAL 5 alignment output is `AlignResult*.mdalign`, with companion `AlignResult*.mdmsp` and `AlignResult*.mzTabM` files.
+- The Thermo RAW conversion container can be overridden with `--thermorawfileparser_image`.
 - Example command:
     ```bash
     nextflow run main_msdial5.nf -profile functional_test
     ```
+
+## Additional Documentation
+
+- Thermo `.raw` preprocessing and MS-DIAL 5 usage: `docs/MSDIAL5_RAW_TO_MZML.md`
 
 ## Configuration
 
