@@ -65,6 +65,34 @@ nextflow run main_msdial5.nf -profile docker \
   --ms2_library data/MSMS-Pos-MassBank.msp
 ```
 
+## MTBLS334 RAW Example (Local)
+
+The clean workspace includes two example Thermo RAW files and a matching MS-DIAL parameter file:
+
+- input directory: `tmp/mtbls334/raw_data/`
+- reference file: `tmp/mtbls334/raw_data/10A_Lean.raw`
+- second sample: `tmp/mtbls334/raw_data/10A_Obese.raw`
+- MS-DIAL parameter file: `tmp/mtbls334/msdial_params_mtbls334.txt`
+- MS1 library: `functional_test/sample_data/ms1_lib.txt`
+- MS2 library: `functional_test/sample_data/MSMS-Pos-MassBank.msp`
+
+Run command:
+
+```bash
+nextflow run main_msdial5.nf -profile functional_test \
+  --input_dir tmp/mtbls334/raw_data \
+  --ref tmp/mtbls334/raw_data/10A_Lean.raw \
+  --msdial_config tmp/mtbls334/msdial_params_mtbls334.txt \
+  --ms1_library functional_test/sample_data/ms1_lib.txt \
+  --ms2_library functional_test/sample_data/MSMS-Pos-MassBank.msp
+```
+
+Output locations for this run:
+
+- alignment and annotation results: `results/ms-dial/AlignResult*.mdalign`, `results/ms-dial/AlignResult*.mdmsp`, `results/ms-dial/AlignResult*.mzTabM`
+- run metadata: `results/pipeline_info/execution_report.html`, `results/pipeline_info/execution_timeline.html`, `results/pipeline_info/execution_trace.txt`
+- workflow logs: `logs/execution.log`, `logs/success_report.txt` or `logs/error.txt`
+
 ## Input Handling
 
 - `.raw` files are converted to `.mzML` inside the workflow with ThermoRawFileParser.
