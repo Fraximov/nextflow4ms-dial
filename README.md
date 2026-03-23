@@ -1,126 +1,132 @@
-# Nextflow4MS-DIAL
+# Nextflow MS-DIAL 5 Workflow
 
-**Nextflow pipeline for reproducible metabolomics data processing with MS-DIAL**.
+**Nextflow pipeline for reproducible untargeted metabolomics data processing with MS-DIAL 5.**
 
-[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A522.10.0-brightgreen.svg)](https://www.nextflow.io/)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/104f754fa0854cc49e7f84ce73b7c440)](https://app.codacy.com/gh/Nextflow4Metabolomics/nextflow4ms-dial/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+This repository is now documented primarily around the MS-DIAL 5 workflow in `main_msdial5.nf`. The legacy MS-DIAL 4 plus MS-FLO pipeline still exists in the codebase, but this README focuses on the MS-DIAL 5 path.
 
-## Introduction
+## Overview
 
-<!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
-**nextflow4ms-dial** is a bioinformatics best-practise analysis workflow for Liquid Chromatography-High Resolution Mass Spectrometry (LC-HRMS) metabolomics data processing
-
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
-
-The workflow support MacOS and Linux operating systems. Notably, the workflow has been tested successfully on: 1) A MacOS system (version 13.5.1) including a 2.6 GHz 6-Core Intel Core i7 Processor and 16GB memory; 2) A Linux system installed in a public server named HiPerGator (https://www.rc.ufl.edu/about/hipergator/) whose system version was Red Hat Enterprise 8.8.
+- Entrypoint: `main_msdial5.nf`
+- Processing engine: official MS-DIAL 5 Linux console release
+- Supported input files: `.mzML`, `.abf`, and Thermo `.raw`
+- Thermo `.raw` handling: converted automatically to `.mzML` before MS-DIAL 5 runs
+- Main outputs: `AlignResult*.mdalign`, `AlignResult*.mdmsp`, `AlignResult*.mzTabM`
 
 ## Installation
 
-1. Install Java version 11+ (the author used 11.0.8).
-
-2. Install [`nextflow`](https://nf-co.re/usage/installation)
-
-3. Install [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/)
+1. Install Java 11 or newer.
+2. Install [Nextflow](https://www.nextflow.io/).
+3. Install either Docker or Singularity.
 
 ## Quick Start
 
-1. Download the pipeline repo and dirct to the folder:
-	```bash
-	git clone https://github.com/Nextflow4Metabolomics/nextflow4ms-dial.git && cd nextflow4ms-dial
-	```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Nextflow4Metabolomics/nextflow4ms-dial.git
+   cd nextflow4ms-dial
+   ```
 
-2. Run the pipeline with example data:
-    ```bash
-    nextflow run main.nf -profile functional_test > logs/execution.log
-    ```
+2. Run the validated example dataset:
+   ```bash
+   nextflow run main_msdial5.nf -profile functional_test
+   ```
 
-3. Run the MS-DIAL 5-only variant with example data:
-    ```bash
-    nextflow run main_msdial5.nf -profile functional_test > logs/execution_msdial5.log
-    ```
+## Run Your Own Data
 
-## Example data and Results
+You need:
 
-- Example data: https://drive.google.com/drive/folders/1atsy-TlfJSs0sw2ZCvbkqOSAbZFYRqdy, which is the publicly available data from the publication “Li, Z., Lu, Y., Guo, Y., Cao, H., Wang, Q., & Shui, W. (2018). Comprehensive evaluation of untargeted metabolomics data processing software in feature detection, quantification, and discriminating marker selection. Analytica Chimica Acta, 1029, 50–57”. The data has ten samples in total and five samples in each of the two groups. The protocol regarding processing this data is also publicly available at MetaboLights MTBLS733 (https://www.ebi.ac.uk/metabolights/editor/MTBLS733/protocols).
-- Execution command: 
-    ```bash
-    nextflow run main.nf -profile docker > logs/execution.log
-    ```
-- Example results are stored in the "results" folder. Note that the file extensions of all produced ".msdial" files have been changed to ".tsv" which enables the files to be opened with Excel software.
-- The execution logs for the example data are stored at "logs" folder.
+- an input directory containing `.mzML`, `.abf`, or Thermo `.raw` files
+- an MS-DIAL parameter file
+- an MS1 library file
+- an MS2 library file
 
-## Process Your Own Data
+Example with `.mzML` input:
 
-1. Download the pipeline repo and dirct to the folder:
-	```bash
-	git clone https://github.com/Nextflow4Metabolomics/nextflow4ms-dial.git && cd nextflow4ms-dial
-	```
-2. Remove example data, put your raw data files in `.mzML` or `.abf` format in the folder `data/raw_data/`. `.mzML` format files can be converted from other formats using the software (ProteoWizard-msConvert)[https://proteowizard.sourceforge.io/download.html], and `.abf` format files can be obtained via using the software (Reifycs Abf Converter)[https://www.reifycs.com/AbfConverter/].
-3. Put config files for MS-DIAL and MS-FLO to the `data/` folder, and name them `msdial_params.txt` and `msflo_params.ini` separately. Example files can be found in `functional_test/sample_data/`.
-4. Put MS1 library and MS2 library to the `data/` folder, and name them `ms1_lib.txt` and `ms2_lib.msp`. Example files can be found in `functional_test/sample_data/`.
-3. Run the pipeline (use "docker" as the profile when running locally, and "singularity" as the profile when running with a high-performance computing system):
-    ```bash
-    nextflow run main.nf -profile docker > logs/execution.log
-    ```
+```bash
+nextflow run main_msdial5.nf -profile docker \
+  --input_dir data/raw_data \
+  --ref data/raw_data/sample_01.mzML \
+  --msdial_config data/msdial_params.txt \
+  --ms1_library data/ms1_lib.txt \
+  --ms2_library data/MSMS-Pos-MassBank.msp
+```
 
-4. Run the MS-DIAL 5-only variant:
-    ```bash
-    nextflow run main_msdial5.nf -profile docker > logs/execution_msdial5.log
-    ```
+Example with Thermo `.raw` input:
 
-## MS-DIAL 5-Only Variant
+```bash
+nextflow run main_msdial5.nf -profile docker \
+  --input_dir data/raw_data \
+  --ref data/raw_data/sample_01.raw \
+  --msdial_config data/msdial_params.txt \
+  --ms1_library data/ms1_lib.txt \
+  --ms2_library data/MSMS-Pos-MassBank.msp
+```
 
-- The entrypoint is `main_msdial5.nf`.
-- This variant runs MS-DIAL 5 only and skips MS-FLO post-processing.
-- It downloads the official Linux console release at runtime using the parameter `--msdial5_release_url`.
-- It can preprocess Thermo `.raw` files by converting them to `.mzML` with ThermoRawFileParser before running MS-DIAL 5.
-- The default release URL points to `MSDIAL.console.v5.5.251021-linux-net8.zip`.
-- The primary MS-DIAL 5 alignment output is `AlignResult*.mdalign`, with companion `AlignResult*.mdmsp` and `AlignResult*.mzTabM` files.
-- The Thermo RAW conversion container can be overridden with `--thermorawfileparser_image`.
-- Example command:
-    ```bash
-    nextflow run main_msdial5.nf -profile functional_test
-    ```
+## Input Handling
 
-## Additional Documentation
+- `.raw` files are converted to `.mzML` inside the workflow with ThermoRawFileParser.
+- `.mzML` and `.abf` files are passed through unchanged.
+- Non-input artifacts in the input directory, such as old MS-DIAL sidecar files, are ignored.
+- `--ref` must point to one of the files present in `--input_dir`.
+- If `--ref` is a Thermo `.raw` file, the staged MS-DIAL parameter file is rewritten automatically so the reference filename matches the converted `.mzML`.
 
-- Thermo `.raw` preprocessing and MS-DIAL 5 usage: `docs/MSDIAL5_RAW_TO_MZML.md`
+## Outputs
+
+The MS-DIAL 5 workflow publishes results in `results/ms-dial/`:
+
+- `AlignResult*.mdalign`
+- `AlignResult*.mdmsp`
+- `AlignResult*.mzTabM`
+
+Nextflow execution metadata is written to `results/pipeline_info/`:
+
+- `execution_report.html`
+- `execution_timeline.html`
+- `execution_trace.txt`
+- `pipeline_dag.svg` when Graphviz is available
 
 ## Configuration
 
-- Before running for your own data files, make sure the reference file in `conf/base.config` and the MS-DIAL config file are set correctly.
-- Configuration for running with Docker are set in the file `conf/base.config`.
-- Configuration for running with High-Performance Computing and Singularity are set in the file `conf/HiPerGator.config`.
-- Parameters for MS-DIAL and MS-FLO are set in their specific configuration files.
+Key runtime parameters are defined in `nextflow.config` and the profile configs under `conf/`.
 
-## FAQ
+Important parameters:
 
-1. Why one of the process was not executed after pipeline execution?
-	- To avoid unexpected error, please do not use any special characters in file names (except underscore).
+- `--input_dir`
+- `--ref`
+- `--msdial_config`
+- `--ms1_library`
+- `--ms2_library`
+- `--msdial5_release_url`
+- `--thermorawfileparser_image`
 
-2. I allocated 20 CPUs for running the pipeline using Slurm, why I got an error like `Process requirement exceed available CPUs -- req: 5; avail: 3`
-	- Make sure to use `--max_cpus` instead of `--cpus` in the config file to define the allocated CPUs for each process.
+Profiles:
+
+- `docker`: local Docker execution
+- `functional_test`: validated test profile
+- `ci_test`: lighter CI-oriented test profile
+- `singularity`: HPC-oriented profile using `conf/HiPerGator.config`
+
+## Additional Documentation
+
+- Thermo RAW preprocessing and MS-DIAL 5 usage: `docs/MSDIAL5_RAW_TO_MZML.md`
+
+## Validation
+
+The MS-DIAL 5 workflow was validated with:
+
+```bash
+nextflow run main_msdial5.nf -profile functional_test
+```
+
+and with direct Thermo RAW input:
+
+```bash
+nextflow run main_msdial5.nf -profile functional_test \
+  --input_dir tmp/mtbls334/raw_data \
+  --ref tmp/mtbls334/raw_data/10A_Lean.raw \
+  --msdial_config tmp/mtbls334/msdial_params_mtbls334.txt
+```
 
 ## Credits
 
-Dr. Dominick Lemas (Dr. Xinsong Du's Ph.D. advisor) and Xinsong Du play an important role on conceptulization.
-The `nextflow4ms-dial` was mainly developed by Xinsong Du. 
-
-## Semantic Annotations
-
-- Input: mzML [EDAM:format_3244]
-- Output: CSV [EDAM:format_3752]
-- Operation: peak detection [EDAM:operation_3215]; chromatogram alignment [EDAM:operation_3628]; metabolite identification [EDAM:operation_3803]
-
-## Log File Interpretation
-
-- `execution_report.html` has information regarding run time and the use of computational resources for the workflow execution.
-- `execution_timeline.html` has information about the execution timeline of each process.
-- `logs/execution.log` is an example log file for a successful execution. The log file includes metadata of the execution such as the versions of the dependency (Nextflow) and the workflow, parameter information such as resource allocation and the software container, the workflow execution progress, and the execution log for each process.
-- `error.txt` is an example error log for a failed execution.
-
-## Journal Publication
-
-Please cite the following journal publication if you use Nextflow4MS-DIAL for scientific projects:
-
-- Du X, Dobrowolski A, Brochhausen M, Garrett TJ, Hogan WR, Lemas DJ. Nextflow4MS-DIAL: A Reproducible Nextflow-Based Workflow for Liquid Chromatography-Mass Spectrometry Metabolomics Data Processing. J Am Soc Mass Spectrom. Published online January 5, 2025. doi:10.1021/jasms.4c00364
+The original `nextflow4ms-dial` project was mainly developed by Xinsong Du, with important conceptual contributions from Dr. Dominick Lemas.
