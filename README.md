@@ -7,7 +7,7 @@ This repository is now documented primarily around the MS-DIAL 5 workflow in `ma
 ## Overview
 
 - Entrypoint: `main_msdial5.nf`
-- Processing engine: official MS-DIAL 5 Linux console release
+- Processing engine: `MSDIALCUI` from the MS-DIAL 5 container image
 - Supported input files: `.mzML`, `.abf`, and Thermo `.raw`
 - Thermo `.raw` handling: converted automatically to `.mzML` before MS-DIAL 5 runs
 - Main outputs: `AlignResult*.mdalign`, `AlignResult*.mdmsp`, `AlignResult*.mzTabM`
@@ -17,6 +17,10 @@ This repository is now documented primarily around the MS-DIAL 5 workflow in `ma
 1. Install Java 11 or newer.
 2. Install [Nextflow](https://www.nextflow.io/).
 3. Install either Docker or Singularity.
+4. Build the MS-DIAL 5 image:
+   ```bash
+   docker build --platform linux/amd64 -t nextflow4ms-dial-msdial5:latest .
+   ```
 
 ## Quick Start
 
@@ -127,7 +131,7 @@ Important parameters:
 - `--msdial_config`
 - `--ms1_library`
 - `--ms2_library`
-- `--msdial5_release_url`
+- `--msdial5_container_image`
 - `--thermorawfileparser_image`
 
 Profiles:

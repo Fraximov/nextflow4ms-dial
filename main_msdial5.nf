@@ -26,7 +26,7 @@ nextflow.enable.dsl=2
 version='1.0dev-msdial5'
 timestamp='20260320'
 
-def msdial5ReleaseUrl = params.msdial5_release_url ?: 'https://github.com/systemsomicslab/MsdialWorkbench/releases/download/MSDIAL-v5.5.251021/MSDIAL.console.v5.5.251021-linux-net8.zip'
+def msdial5ContainerImage = params.msdial5_container_image ?: 'nextflow4ms-dial-msdial5:latest'
 def thermoRawParserImage = params.thermorawfileparser_image ?: 'quay.io/biocontainers/thermorawfileparser:2.0.0.dev--h9ee0642_0'
 
 println "Project : $workflow.projectDir"
@@ -44,7 +44,7 @@ if (params.help) {
     System.out.println("")
     System.out.println("Arguments:")
     System.out.println("    -profile                                docker, singularity, or functional_test")
-    System.out.println("    --msdial5_release_url                   official MS-DIAL 5 Linux console zip URL")
+    System.out.println("    --msdial5_container_image               container image that provides MSDIALCUI")
     System.out.println("    --thermorawfileparser_image             container used to convert Thermo RAW files to mzML")
     System.out.println("    --help                                  whether to show help information or not, default is null")
     System.out.println("")
@@ -61,10 +61,10 @@ summary['Pipeline Name']  = 'RUMP MS-DIAL 5'
 if(workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName
 summary['Input']            = params.input
-summary['MS-DIAL 5 URL']    = msdial5ReleaseUrl
+summary['MS-DIAL 5 image']  = msdial5ContainerImage
 summary['RAW converter']    = thermoRawParserImage
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
-if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
+if (workflow.containerEngine) summary['Container engine'] = workflow.containerEngine
 summary['Output dir']       = params.outdir
 summary['Launch dir']       = workflow.launchDir
 summary['Working dir']      = workflow.workDir
@@ -74,19 +74,6 @@ summary['Config Profile']   = workflow.profile
 summary['Config Files']     = workflow.configFiles.join(', ')
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
-
-process msdial5_download {
-
-    output:
-    path "msdial5", emit: msdial5
-
-    shell:
-    """
-    wget -O msdial5.zip "${msdial5ReleaseUrl}" &&
-    unzip -q msdial5.zip -d msdial5 &&
-    chmod +x msdial5/MSDIALCUI
-    """
-}
 
 process prepare_msdial5_input {
 
@@ -131,10 +118,11 @@ process peak_detection_msdial5 {
 
     debug true
 
+    container msdial5ContainerImage
+
     publishDir './results/'
 
     input:
-    path msdial5
     path msdial_config
     path data
     path ms1_lib
@@ -154,16 +142,13 @@ process peak_detection_msdial5 {
     cp -L ${ms1_lib} "ms-dial" &&
     cp -L ${ms2_lib} "ms-dial" &&
     cp -rL ${data} "ms-dial" &&
-    cp -rL ${msdial5} "ms-dial" &&
     cd "ms-dial" &&
-    chmod +x ./msdial5/MSDIALCUI &&
-    ./msdial5/MSDIALCUI lcms -i ${data} -o ./ -m ${msdial_config}
+    command -v MSDIALCUI >/dev/null &&
+    MSDIALCUI lcms -i ${data} -o ./ -m ${msdial_config}
     """
 }
 
 workflow {
-    msdial5_download()
-
     prepare_msdial5_input(
         Channel.fromPath("${params.input_dir}/*", checkIfExists: true).collect(),
         Channel.fromPath(params.msdial_config),
@@ -171,7 +156,6 @@ workflow {
     )
 
     peak_detection_msdial5(
-        msdial5_download.out.msdial5,
         prepare_msdial5_input.out.prepared_msdial_config,
         prepare_msdial5_input.out.prepared_data,
         Channel.fromPath(params.ms1_library),

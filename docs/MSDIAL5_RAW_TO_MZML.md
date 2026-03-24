@@ -8,6 +8,15 @@ This note documents the integrated Thermo RAW preprocessing path for the MS-DIAL
 - The pipeline now preprocesses Thermo `.raw` files by converting them to `.mzML` with ThermoRawFileParser.
 - Existing `.mzML` and `.abf` inputs are passed through unchanged.
 - The reference filename in the staged MS-DIAL parameter file is updated automatically when the selected reference input is a Thermo RAW file.
+- `MSDIALCUI` is provided by the MS-DIAL 5 container image and is not downloaded at runtime by the workflow.
+
+## Build the MS-DIAL 5 Container
+
+Build the container image from this repository before running the workflow:
+
+```bash
+docker build --platform linux/amd64 -t nextflow4ms-dial-msdial5:latest .
+```
 
 ## Validated Tool
 
